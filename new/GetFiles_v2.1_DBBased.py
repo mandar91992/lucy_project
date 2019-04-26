@@ -10,23 +10,39 @@ import shutil
 import sqlite3
 
 def create_table():
-	c.execute('CREATE TABLE IF NOT EXISTS controlSheet (SolutionID TEXT, LineID TEXT, Path TEXT, SourceBOM INT, NewItemCreate INT, QueryOutput INT, InterimLoadFIle INT, FinalLoadFile INT, DataSets INT, TopNode TEXT, NX_1 TEXT, NX_2 TEXT)')
+	try:
+		c.execute('CREATE TABLE IF NOT EXISTS controlSheet (SolutionID TEXT, LineID TEXT, Path TEXT, SourceBOM INT, NewItemCreate INT, QueryOutput INT, InterimLoadFIle INT, FinalLoadFile INT, DataSets INT, TopNode TEXT, NX_1 TEXT, NX_2 TEXT)')
+	except:
+		print('there is a isuue creating the table')
 	
 def dynamic_data_entry(SID,LID,LOC,SBOM,NItem,Query,iLoad,fLoad,DS,tNode,nX1,nX2):
-	c.execute("INSERT INTO controlSheet (SolutionID,LineID,Path,SourceBOM, NewItemCreate,QueryOutput,InterimLoadFIle,FinalLoadFile,DataSets,TopNode,NX_1,NX_2) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",(SID,LID,LOC,SBOM,NItem,Query,iLoad,fLoad,DS,tNode,nX1,nX2))
-	conn.commit()
+	try:
+		c.execute("INSERT INTO controlSheet (SolutionID,LineID,Path,SourceBOM, NewItemCreate,QueryOutput,InterimLoadFIle,FinalLoadFile,DataSets,TopNode,NX_1,NX_2) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",(SID,LID,LOC,SBOM,NItem,Query,iLoad,fLoad,DS,tNode,nX1,nX2))
+		conn.commit()
+	except:
+		print('Creating the table')
+		create_table()
 
 def remove_duplicate_lines():
-	c.execute("DELETE FROM controlSheet WHERE rowid NOT IN (SELECT min(rowid) FROM controlSheet GROUP BY SolutionID, LineID)");
-	conn.commit()
+	try:
+		c.execute("DELETE FROM controlSheet WHERE rowid NOT IN (SELECT min(rowid) FROM controlSheet GROUP BY SolutionID, LineID)");
+		conn.commit()
+	except:
+		print('There was a issue DELETING DUPLICATE LINES')
+		create_table()
+
 
 def read_from_db():
-	c.execute ('SELECT  * FROM  controlSheet WHERE SourceBOM=1')
-	data=c.fetchall()
-	i=1
-	for row in c.fetchall():
-		print("ROW: ",i,"..",row)
-		i +=1
+	try:
+		c.execute ('SELECT  * FROM  controlSheet WHERE SourceBOM=1')
+		data=c.fetchall()
+		i=1
+		for row in c.fetchall():
+			print("ROW: ",i,"..",row)
+			i +=1
+	except:
+		print('There is an issue READING the DATABASE')
+		create_table()
 
 
 
@@ -36,8 +52,11 @@ def read_from_db():
 
 DatabasePath="D:\\SPLM\\Tacton_Integration\\ToProcess\\Database"
 TableName="ControlTable.db"
-conn=sqlite3.connect(DatabasePath+"\\"+TableName)
-c = conn.cursor()
+try:
+	conn=sqlite3.connect(DatabasePath+"\\"+TableName)
+	c = conn.cursor()
+except:
+	print('There was an error connecting to the database')
 
 
 ####################create_table()	#Run the first time to create the table, needs to be commented out for BAU
@@ -97,6 +116,7 @@ for root, dirs_list, files_list in os.walk(path):
 				UpdateFileName=y2+"_"+y1
 
 				#Files have been renames to new file name
+				#TRY CATCH SHOULD BE USED HERE BUT I AM NOT GETTING THE CODE FOR CREATING FILE
 				os.rename(x[j],FilePath[Position]+"\\"+UpdateFileName)
 				
 				#The new file name is now moved to the new location

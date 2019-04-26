@@ -25,27 +25,31 @@ c = conn.cursor()
 
 
 def call_create_FinalLoadFile(SID,LID,LOC):
-
-	os.environ["SID_F"]=SID
-	os.environ["LID_F"]=LID
-	os.environ["LOC_F"]=LOC
-	subprocess.call("python D:\SPLM\Tacton_Integration\code_version_0.0.2\pollingFiles\createLoadFile_v0.1.py %SID_F% %LID_F% %LOC_F%",shell=True)
+	try:
+		os.environ["SID_F"]=SID
+		os.environ["LID_F"]=LID
+		os.environ["LOC_F"]=LOC
+		subprocess.call("python D:\SPLM\Tacton_Integration\code_version_0.0.2\pollingFiles\createLoadFile_v0.1.py %SID_F% %LID_F% %LOC_F%",shell=True)
+	except:
+		print('There Was a problem Calling the subprocess')
 
 def read_from_db():
 	count =0
-	x=c.execute ('SELECT  * FROM  controlSheet WHERE QueryOutput=1 AND InterimLoadFIle = 1') #AND NewItemCreate=1)
-	for row in c.fetchall():
-		x=list(row)
-		count +=1
-		#print(x)
+	try:
+		x=c.execute ('SELECT  * FROM  controlSheet WHERE QueryOutput=1 AND InterimLoadFIle = 1') #AND NewItemCreate=1)
+		for row in c.fetchall():
+			x=list(row)
+			count +=1
+			#print(x)
+			
 		
-	
-	if count == 0:
-		#print("There is nothing in the database")
-		pass
-	else:
-		call_create_FinalLoadFile(x[0],x[1],x[2])
-	
+		if count == 0:
+			#print("There is nothing in the database")
+			pass
+		else:
+			call_create_FinalLoadFile(x[0],x[1],x[2])
+	except:
+		print('There Was some Problem Connecting the Database')
 	#print(x)
 
 
